@@ -1,26 +1,35 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* ─── Colors (from prototype C object) ─── */
+  --color-bg: #08080f;
+  --color-surface: #111119;
+  --color-surface-hi: #1a1a26;
+  --color-surface-border: #252536;
+  --color-accent: #e8b931;
+  --color-accent-dim: #b8922a;
+  --color-accent-glow: #e8b93130;
+  --color-correct: #22c985;
+  --color-correct-dim: #1a9e6a;
+  --color-danger: #ef4444;
+  --color-danger-dim: #dc2626;
+  --color-purple: #a78bfa;
+  --color-blue: #60a5fa;
+  --color-pink: #f472b6;
+  --color-orange: #fb923c;
+  --color-teal: #2dd4bf;
+  --color-text: #f0f0f5;
+  --color-text-mid: #a0a0b8;
+  --color-text-dim: #65657a;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* ─── Fonts ─── */
+  --font-sans: var(--font-outfit), "Segoe UI", sans-serif;
+  --font-display: var(--font-archivo-black), "Impact", sans-serif;
+  --font-mono: var(--font-ibm-plex-mono), "Courier New", monospace;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
 }
