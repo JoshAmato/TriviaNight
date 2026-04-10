@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useGameStore } from "@/stores/gameStore";
 import { useGameState } from "@/hooks/useGameState";
@@ -20,16 +20,18 @@ export default function HostRemotePage() {
   const params = useParams();
   const router = useRouter();
   const gameId = params.gameId as string;
-  const store = useGameStore();
-  const { roomCode, phase } = store;
+  const { roomCode, phase } = useGameStore();
 
   const [activeTab, setActiveTab] = useState("controls");
   const [ready, setReady] = useState(false);
+  const initRef = useRef(false);
 
-  // Initialize game data
+  // Initialize game data — runs once
   useEffect(() => {
+    if (initRef.current) return;
+    initRef.current = true;
+
     async function init() {
-      // First check if game is live, if not go live
       const res = await fetch(`/api/games/${gameId}`);
       if (!res.ok) {
         router.push("/dashboard");
@@ -38,7 +40,6 @@ export default function HostRemotePage() {
       const data = await res.json();
 
       if (data.status === "draft") {
-        // Go live
         const liveRes = await fetch(`/api/games/${gameId}/go-live`, {
           method: "POST",
         });
@@ -51,6 +52,7 @@ export default function HostRemotePage() {
         data.status = "live";
       }
 
+      const store = useGameStore.getState();
       store.setGameData({
         gameId: data.id,
         roomCode: data.room_code,
@@ -63,7 +65,7 @@ export default function HostRemotePage() {
       setReady(true);
     }
     init();
-  }, [gameId, router, store]);
+  }, [gameId, router]);
 
   // Subscribe to Realtime
   const { send } = useGameState({

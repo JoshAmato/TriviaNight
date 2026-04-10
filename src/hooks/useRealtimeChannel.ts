@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import type { GameEvent, TeamEvent } from "@/types/realtime";
@@ -20,7 +20,7 @@ export function useRealtimeChannel({
   onReconnect,
   enabled = true,
 }: UseRealtimeChannelOptions) {
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
   const channelRef = useRef<RealtimeChannel | null>(null);
   const onMessageRef = useRef(onMessage);
   const onReconnectRef = useRef(onReconnect);
@@ -42,7 +42,6 @@ export function useRealtimeChannel({
         if (status === "SUBSCRIBED") {
           channelRef.current = channel;
         }
-        // Handle reconnection
         if (status === "CHANNEL_ERROR") {
           onReconnectRef.current?.();
         }

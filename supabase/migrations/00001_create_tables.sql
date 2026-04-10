@@ -1,5 +1,4 @@
--- Enable UUID generation
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- gen_random_uuid() is built into Postgres 13+ (no extension needed)
 
 -- ═══════════════════════════════════════════
 -- HOSTS (extends Supabase auth.users)
@@ -20,7 +19,7 @@ CREATE TABLE hosts (
 -- SPONSORS
 -- ═══════════════════════════════════════════
 CREATE TABLE sponsors (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   host_id UUID NOT NULL REFERENCES hosts(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   logo_url TEXT NOT NULL,
@@ -32,7 +31,7 @@ CREATE INDEX idx_sponsors_host ON sponsors(host_id);
 -- QUESTION BANK
 -- ═══════════════════════════════════════════
 CREATE TABLE questions (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   host_id UUID NOT NULL REFERENCES hosts(id) ON DELETE CASCADE,
   text TEXT NOT NULL,
   answer TEXT NOT NULL,
@@ -54,7 +53,7 @@ CREATE INDEX idx_questions_category ON questions(host_id, category);
 -- GAMES
 -- ═══════════════════════════════════════════
 CREATE TABLE games (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   host_id UUID NOT NULL REFERENCES hosts(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   room_code TEXT NOT NULL UNIQUE,
@@ -71,7 +70,7 @@ CREATE UNIQUE INDEX idx_games_room_code ON games(room_code) WHERE status = 'live
 -- GAME SPONSORS (many-to-many)
 -- ═══════════════════════════════════════════
 CREATE TABLE game_sponsors (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   game_id UUID NOT NULL REFERENCES games(id) ON DELETE CASCADE,
   sponsor_id UUID NOT NULL REFERENCES sponsors(id) ON DELETE CASCADE,
   UNIQUE(game_id, sponsor_id)
@@ -81,7 +80,7 @@ CREATE TABLE game_sponsors (
 -- ROUNDS
 -- ═══════════════════════════════════════════
 CREATE TABLE rounds (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   game_id UUID NOT NULL REFERENCES games(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   round_type TEXT NOT NULL CHECK (round_type IN ('standard', 'picture', 'speed', 'final', 'break', 'tiebreaker')),
@@ -96,7 +95,7 @@ CREATE INDEX idx_rounds_game ON rounds(game_id, sort_order);
 -- ROUND QUESTIONS
 -- ═══════════════════════════════════════════
 CREATE TABLE round_questions (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   round_id UUID NOT NULL REFERENCES rounds(id) ON DELETE CASCADE,
   question_id UUID NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
   sort_order INTEGER NOT NULL,
@@ -108,7 +107,7 @@ CREATE INDEX idx_round_questions ON round_questions(round_id, sort_order);
 -- TEAMS (per game)
 -- ═══════════════════════════════════════════
 CREATE TABLE teams (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   game_id UUID NOT NULL REFERENCES games(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   color TEXT NOT NULL,
@@ -124,7 +123,7 @@ CREATE UNIQUE INDEX idx_teams_name ON teams(game_id, name);
 -- TEAM MEMBERS (multiple devices per team)
 -- ═══════════════════════════════════════════
 CREATE TABLE team_members (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   team_id UUID NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
   device_id TEXT NOT NULL,
   is_captain BOOLEAN NOT NULL DEFAULT FALSE,
@@ -136,7 +135,7 @@ CREATE INDEX idx_team_members_team ON team_members(team_id);
 -- TEAM ANSWERS
 -- ═══════════════════════════════════════════
 CREATE TABLE team_answers (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   team_id UUID NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
   round_question_id UUID NOT NULL REFERENCES round_questions(id) ON DELETE CASCADE,
   answer_text TEXT NOT NULL,
@@ -151,7 +150,7 @@ CREATE INDEX idx_team_answers_rq ON team_answers(round_question_id);
 -- TEAM WAGERS (Final Question only)
 -- ═══════════════════════════════════════════
 CREATE TABLE team_wagers (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   team_id UUID NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
   round_id UUID NOT NULL REFERENCES rounds(id) ON DELETE CASCADE,
   wager_amount INTEGER NOT NULL CHECK (wager_amount >= 1),
@@ -162,7 +161,7 @@ CREATE TABLE team_wagers (
 -- GAME STATE (singleton per game — drives real-time sync)
 -- ═══════════════════════════════════════════
 CREATE TABLE game_state (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   game_id UUID NOT NULL UNIQUE REFERENCES games(id) ON DELETE CASCADE,
   current_round_id UUID REFERENCES rounds(id),
   current_question_id UUID REFERENCES round_questions(id),
@@ -179,7 +178,7 @@ CREATE TABLE game_state (
 -- SCORE ADJUSTMENTS (audit log)
 -- ═══════════════════════════════════════════
 CREATE TABLE score_adjustments (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   team_id UUID NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
   delta INTEGER NOT NULL,
   reason TEXT,

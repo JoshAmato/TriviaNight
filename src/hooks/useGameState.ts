@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { useGameStore } from "@/stores/gameStore";
 import { useRealtimeChannel } from "./useRealtimeChannel";
 import type { GameEvent } from "@/types/realtime";
@@ -12,9 +12,10 @@ interface UseGameStateOptions {
 }
 
 export function useGameState({ gameId, roomCode, enabled = true }: UseGameStateOptions) {
-  const store = useGameStore();
+  const hasFetched = useRef(false);
 
   const fetchState = useCallback(async () => {
+    const store = useGameStore.getState();
     try {
       const res = await fetch(`/api/games/${gameId}`);
       if (!res.ok) return;
@@ -46,10 +47,11 @@ export function useGameState({ gameId, roomCode, enabled = true }: UseGameStateO
     } catch {
       // Silently fail — will retry on reconnect
     }
-  }, [gameId, store]);
+  }, [gameId]);
 
   const handleMessage = useCallback(
     (event: GameEvent) => {
+      const store = useGameStore.getState();
       switch (event.type) {
         case "STATE_UPDATE":
           store.setGameState(event.payload);
@@ -69,7 +71,7 @@ export function useGameState({ gameId, roomCode, enabled = true }: UseGameStateO
           break;
       }
     },
-    [store]
+    []
   );
 
   const { send } = useRealtimeChannel({
@@ -79,9 +81,12 @@ export function useGameState({ gameId, roomCode, enabled = true }: UseGameStateO
     enabled,
   });
 
-  // Initial fetch
+  // Initial fetch — only once
   useEffect(() => {
-    if (enabled) fetchState();
+    if (enabled && !hasFetched.current) {
+      hasFetched.current = true;
+      fetchState();
+    }
   }, [enabled, fetchState]);
 
   return { send, refetch: fetchState };
