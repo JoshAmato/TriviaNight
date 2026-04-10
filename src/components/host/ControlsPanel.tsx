@@ -273,6 +273,31 @@ export function ControlsPanel({ gameId, send }: ControlsPanelProps) {
 
   return (
     <div className="flex flex-col gap-4">
+      {/* Current question context */}
+      {currentQuestion && (phase === "question" || phase === "answerReveal") && (
+        <div className="rounded-lg bg-surface-hi p-3">
+          <p className="text-xs font-medium text-text-dim">
+            Q{currentRound ? currentRound.questions.findIndex((rq) => rq.id === currentQuestion.id) + 1 : "?"} of {currentRound?.questions.length ?? "?"}
+          </p>
+          <p className="mt-1 text-sm text-text">{currentQuestion.question.text}</p>
+          {phase === "answerReveal" && (
+            <p className="mt-1 text-xs font-semibold text-correct">
+              Answer: {currentQuestion.question.answer}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Round info */}
+      {currentRound && phase === "roundIntro" && (
+        <div className="rounded-lg bg-surface-hi p-3">
+          <p className="text-sm font-medium text-text">{currentRound.name}</p>
+          <p className="text-xs text-text-dim">
+            {currentRound.round_type} {"\u00B7"} {currentRound.questions.length} questions {"\u00B7"} {currentRound.timer_seconds}s timer
+          </p>
+        </div>
+      )}
+
       {/* Timer display */}
       {timerRemaining !== null && phase === "question" && (
         <div className="flex justify-center">
