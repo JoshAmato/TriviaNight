@@ -62,36 +62,43 @@ export default async function DashboardPage() {
         </div>
       ) : (
         <div className="grid gap-4">
-          {games.map((game) => (
-            <Link
-              key={game.id}
-              href={`/game/${game.id}/builder`}
-              className="flex items-center justify-between rounded-xl border border-surface-border bg-surface p-5 transition-colors hover:border-accent/30"
-            >
-              <div>
-                <h3 className="font-semibold text-text">{game.name}</h3>
-                <p className="mt-1 text-sm text-text-dim">
-                  {new Date(game.created_at).toLocaleDateString()} {"\u00B7"}{" "}
-                  <span
-                    className={
-                      game.status === "live"
-                        ? "text-correct"
-                        : game.status === "completed"
-                          ? "text-text-mid"
-                          : "text-accent"
-                    }
-                  >
-                    {game.status}
+          {games.map((game) => {
+            const href =
+              game.status === "live"
+                ? `/game/${game.id}/live`
+                : `/game/${game.id}/builder`;
+
+            return (
+              <Link
+                key={game.id}
+                href={href}
+                className="flex items-center justify-between rounded-xl border border-surface-border bg-surface p-5 transition-colors hover:border-accent/30"
+              >
+                <div>
+                  <h3 className="font-semibold text-text">{game.name}</h3>
+                  <p className="mt-1 text-sm text-text-dim">
+                    {new Date(game.created_at).toLocaleDateString()} {"\u00B7"}{" "}
+                    <span
+                      className={
+                        game.status === "live"
+                          ? "text-correct"
+                          : game.status === "completed"
+                            ? "text-text-mid"
+                            : "text-accent"
+                      }
+                    >
+                      {game.status}
+                    </span>
+                  </p>
+                </div>
+                {game.status === "live" && game.room_code && (
+                  <span className="rounded bg-correct/10 px-3 py-1 font-mono text-lg font-bold text-correct">
+                    {game.room_code}
                   </span>
-                </p>
-              </div>
-              {game.room_code && (
-                <span className="font-mono text-lg font-bold text-text-mid">
-                  {game.room_code}
-                </span>
-              )}
-            </Link>
-          ))}
+                )}
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>
